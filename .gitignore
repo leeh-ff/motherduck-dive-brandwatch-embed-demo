@@ -1,0 +1,9 @@
+# Live 24h embed session (a read credential) - never commit
+session.js
+
+# Tokens, just in case one is ever dropped in here
+*token*
+.env
+*.pem
+
+__pycache__/

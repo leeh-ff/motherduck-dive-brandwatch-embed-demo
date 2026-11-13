@@ -1,0 +1,171 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Insight Hub · Signals</title>
+  <style>
+    :root {
+      --bg: #f3f4f7; --panel: #ffffff; --ink: #1c2230; --muted: #6b7385;
+      --line: #e3e6ec; --brand: #3b5bdb; --brand-soft: #e8edff; --nav: #141a26;
+      --good: #2f9e44; --warn: #e8590c;
+    }
+    * { box-sizing: border-box; }
+    body { margin: 0; font-family: "Inter", system-ui, -apple-system, sans-serif; background: var(--bg); color: var(--ink); }
+    .app { display: grid; grid-template-columns: 232px 1fr; min-height: 100vh; }
+
+    /* Sidebar */
+    nav { background: var(--nav); color: #c7cede; padding: 20px 14px; display: flex; flex-direction: column; gap: 4px; }
+    .logo { display: flex; align-items: center; gap: 10px; color: #fff; font-weight: 700; font-size: 17px; padding: 4px 10px 22px; }
+    .logo-mark { width: 30px; height: 30px; border-radius: 8px; background: linear-gradient(135deg, #5c7cfa, #22b8cf); }
+    .nav-label { font-size: 11px; text-transform: uppercase; letter-spacing: .08em; color: #7d879c; padding: 16px 10px 6px; }
+    nav a { color: inherit; text-decoration: none; padding: 9px 10px; border-radius: 8px; font-size: 14px; display: flex; justify-content: space-between; }
+    nav a:hover { background: #1f2738; }
+    nav a.active { background: #26304a; color: #fff; }
+    .pill { font-size: 11px; background: #33405f; border-radius: 10px; padding: 1px 7px; }
+    .nav-foot { margin-top: auto; font-size: 12px; color: #7d879c; padding: 10px; }
+
+    /* Top bar */
+    header { display: flex; align-items: center; gap: 16px; padding: 14px 28px; background: var(--panel); border-bottom: 1px solid var(--line); }
+    .search { flex: 1; max-width: 420px; background: var(--bg); border: 1px solid var(--line); border-radius: 8px; padding: 8px 12px; color: var(--muted); font-size: 14px; }
+    .spacer { flex: 1; }
+    .bell { width: 34px; height: 34px; border-radius: 50%; border: 1px solid var(--line); display: grid; place-items: center; color: var(--muted); }
+    .avatar { width: 34px; height: 34px; border-radius: 50%; background: #ffd8a8; color: #7a4100; display: grid; place-items: center; font-weight: 700; font-size: 13px; }
+
+    /* Content */
+    main { padding: 24px 28px 40px; }
+    .crumbs { font-size: 13px; color: var(--muted); margin-bottom: 6px; }
+    .title-row { display: flex; align-items: flex-end; justify-content: space-between; gap: 16px; margin-bottom: 20px; flex-wrap: wrap; }
+    h1 { margin: 0; font-size: 26px; letter-spacing: -.01em; }
+    .sub { color: var(--muted); font-size: 14px; margin-top: 4px; }
+    .actions { display: flex; gap: 8px; }
+    .btn { border: 1px solid var(--line); background: var(--panel); border-radius: 8px; padding: 8px 14px; font-size: 14px; color: var(--ink); cursor: default; }
+    .btn.primary { background: var(--brand); border-color: var(--brand); color: #fff; }
+
+    .cards { display: grid; grid-template-columns: repeat(4, 1fr); gap: 14px; margin-bottom: 20px; }
+    .card { background: var(--panel); border: 1px solid var(--line); border-radius: 12px; padding: 16px; }
+    .card .k { font-size: 12px; color: var(--muted); }
+    .card .v { font-size: 22px; font-weight: 700; margin-top: 6px; }
+    .card .d { font-size: 12px; margin-top: 4px; }
+    .up { color: var(--good); } .down { color: var(--warn); }
+
+    .tabs { display: flex; gap: 22px; border-bottom: 1px solid var(--line); margin-bottom: 16px; font-size: 14px; }
+    .tabs span { padding: 10px 0; color: var(--muted); }
+    .tabs span.on { color: var(--ink); border-bottom: 2px solid var(--brand); font-weight: 600; }
+
+    .layout { display: grid; grid-template-columns: 1fr 280px; gap: 16px; align-items: start; }
+    .frame { background: var(--panel); border: 1px solid var(--line); border-radius: 12px; overflow: hidden; }
+    .frame-head { display: flex; justify-content: space-between; align-items: center; padding: 12px 16px; border-bottom: 1px solid var(--line); font-size: 13px; color: var(--muted); }
+    .live { display: inline-flex; align-items: center; gap: 6px; }
+    .live::before { content: ""; width: 8px; height: 8px; border-radius: 50%; background: var(--good); }
+    iframe { display: block; width: 100%; height: 80vh; border: none; }
+    .msg { padding: 32px; color: var(--muted); }
+
+    aside { display: flex; flex-direction: column; gap: 16px; }
+    aside .card h3 { margin: 0 0 10px; font-size: 14px; }
+    .feed { list-style: none; margin: 0; padding: 0; font-size: 13px; }
+    .feed li { padding: 8px 0; border-top: 1px solid var(--line); color: var(--muted); }
+    .feed li:first-child { border-top: none; }
+    .feed b { color: var(--ink); font-weight: 600; }
+    .tag { display: inline-block; font-size: 11px; background: var(--brand-soft); color: var(--brand); border-radius: 6px; padding: 2px 8px; margin: 0 4px 6px 0; }
+
+    @media (max-width: 1100px) {
+      .app { grid-template-columns: 1fr; } nav { display: none; }
+      .cards { grid-template-columns: repeat(2, 1fr); } .layout { grid-template-columns: 1fr; }
+    }
+  </style>
+</head>
+<body>
+<div class="app">
+  <nav>
+    <div class="logo"><div class="logo-mark"></div>Insight Hub</div>
+    <a href="#">Home</a>
+    <a href="#">Briefings <span class="pill">3</span></a>
+    <a href="#" class="active">Signals</a>
+    <a href="#">Horizon Scans</a>
+    <a href="#">Panels &amp; Surveys</a>
+    <div class="nav-label">Workspaces</div>
+    <a href="#">Consumer Futures</a>
+    <a href="#">Category Lab</a>
+    <a href="#">Ideas Backlog <span class="pill">12</span></a>
+    <div class="nav-label">Admin</div>
+    <a href="#">Settings</a>
+    <div class="nav-foot">Internal prototype · not a real product</div>
+  </nav>
+
+  <div>
+    <header>
+      <div class="search">Search signals, briefings, people…</div>
+      <div class="spacer"></div>
+      <div class="bell" aria-hidden="true">🔔</div>
+      <div class="avatar" title="Demo user">DU</div>
+    </header>
+
+    <main>
+      <div class="crumbs">Signals / Social listening / Sentiment</div>
+      <div class="title-row">
+        <div>
+          <h1>Sentiment Intelligence</h1>
+          <div class="sub">Live view of social sentiment, refreshed from the data warehouse.</div>
+        </div>
+        <div class="actions">
+          <span class="btn">Share</span>
+          <span class="btn">Subscribe</span>
+          <span class="btn primary">Add to briefing</span>
+        </div>
+      </div>
+
+      <div class="cards" aria-label="Decorative placeholder metrics">
+        <div class="card"><div class="k">Open briefings</div><div class="v">7</div><div class="d up">▲ 2 this week</div></div>
+        <div class="card"><div class="k">Signals tracked</div><div class="v">148</div><div class="d up">▲ 6 new</div></div>
+        <div class="card"><div class="k">Team notes</div><div class="v">23</div><div class="d down">▼ 4 vs last week</div></div>
+        <div class="card"><div class="k">Next review</div><div class="v">Thu</div><div class="d">Weekly signals huddle</div></div>
+      </div>
+
+      <div class="tabs"><span class="on">Overview</span><span>Notes</span><span>History</span><span>Related</span></div>
+
+      <div class="layout">
+        <section class="frame">
+          <div class="frame-head"><span>Embedded dashboard</span><span class="live">Live</span></div>
+          <div id="frame"><p class="msg">Loading…</p></div>
+        </section>
+
+        <aside>
+          <div class="card">
+            <h3>Tags</h3>
+            <span class="tag">Social</span><span class="tag">Sentiment</span><span class="tag">Daily</span><span class="tag">Brand health</span>
+          </div>
+          <div class="card">
+            <h3>Recent activity</h3>
+            <ul class="feed">
+              <li><b>A. Analyst</b> pinned this to “Weekly huddle”</li>
+              <li><b>R. Researcher</b> added a note on the October dip</li>
+              <li><b>Signals bot</b> refreshed the data</li>
+              <li><b>P. Planner</b> shared with Category Lab</li>
+            </ul>
+          </div>
+          <div class="card">
+            <h3>About this view</h3>
+            <div class="sub" style="margin:0">Placeholder text. Everything outside the dashboard panel is decorative and links nowhere.</div>
+          </div>
+        </aside>
+      </div>
+    </main>
+  </div>
+</div>
+
+<script src="session.js"></script>
+<script>
+  const box = document.getElementById('frame');
+  if (!window.EMBED_SESSION) {
+    box.innerHTML = '<p class="msg">No session found. Run <code>make serve</code> first.</p>';
+  } else {
+    const f = document.createElement('iframe');
+    f.setAttribute('sandbox', 'allow-scripts allow-same-origin');
+    f.title = 'Brandwatch Sentiment Intelligence';
+    f.src = 'https://embed-motherduck.com/sandbox/#session=' + window.EMBED_SESSION;  // as-is, per MotherDuck docs
+    box.replaceChildren(f);
+  }
+</script>
+</body>
+</html>
