@@ -62,7 +62,7 @@ PLAN=asp-dive-embed-demo
 APP=ff-dive-embed-demo        # becomes https://$APP.azurewebsites.net
 
 az appservice plan create -g $RG -n $PLAN --is-linux --sku F1
-az webapp create -g $RG -p $PLAN -n $APP --runtime "PYTHON:3.12"
+az webapp create -g $RG -p $PLAN -n $APP --runtime "PYTHON:3.13"
 az webapp update -g $RG -n $APP --https-only true
 az webapp config set -g $RG -n $APP --ftps-state Disabled \
   --startup-file "gunicorn --bind=0.0.0.0:8000 --workers 1 --threads 4 --timeout 60 app:app"
