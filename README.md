@@ -57,7 +57,7 @@ One-off setup, with the Azure CLI (`az login` first). Pick a globally unique app
 
 ```bash
 RG=DiveEmbedTesting            # existing resource group
-LOC=$(az group show -n $RG --query location -o tsv)
+LOC=ukwest                     # the subscription has no F1 quota in uksouth
 PLAN=asp-dive-embed-demo
 APP=ff-dive-embed-demo        # becomes https://$APP.azurewebsites.net
 
