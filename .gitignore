@@ -7,3 +7,7 @@ session.js
 *.pem
 
 __pycache__/
+
+# Local virtualenv and deploy package
+.venv/
+*.zip

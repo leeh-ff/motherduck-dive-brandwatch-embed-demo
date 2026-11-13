@@ -154,18 +154,23 @@
   </div>
 </div>
 
-<script src="session.js"></script>
 <script>
   const box = document.getElementById('frame');
-  if (!window.EMBED_SESSION) {
-    box.innerHTML = '<p class="msg">No session found. Run <code>make serve</code> first.</p>';
-  } else {
-    const f = document.createElement('iframe');
-    f.setAttribute('sandbox', 'allow-scripts allow-same-origin');
-    f.title = 'Brandwatch Sentiment Intelligence';
-    f.src = 'https://embed-motherduck.com/sandbox/#session=' + window.EMBED_SESSION;  // as-is, per MotherDuck docs
-    box.replaceChildren(f);
-  }
+  const fail = (text) => { box.innerHTML = '<p class="msg"></p>'; box.firstChild.textContent = text; };
+
+  // The session is created server-side; the MotherDuck token never reaches the browser.
+  fetch('/api/session', { credentials: 'same-origin', cache: 'no-store' })
+    .then(async (r) => {
+      if (r.status === 401) throw new Error('You\'re not signed in. Reload the page to sign in.');
+      const body = await r.json().catch(() => ({}));
+      if (!r.ok || !body.session) throw new Error(body.error || 'Couldn\'t load the dashboard.');
+      const f = document.createElement('iframe');
+      f.setAttribute('sandbox', 'allow-scripts allow-same-origin');
+      f.title = 'Brandwatch Sentiment Intelligence';
+      f.src = 'https://embed-motherduck.com/sandbox/#session=' + body.session;  // as-is, per MotherDuck docs
+      box.replaceChildren(f);
+    })
+    .catch((e) => fail(e.message || 'Couldn\'t load the dashboard.'));
 </script>
 </body>
 </html>
