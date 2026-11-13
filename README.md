@@ -81,7 +81,6 @@ Then turn on sign-in in the portal: **Web app → Authentication → Add identit
 Push to `main` and GitHub Actions deploys it. It signs in to Azure with a federated credential (no stored secret), via an app registration that can only deploy to this one web app:
 
 ```bash
-REPO=leeh-ff/motherduck-dive-brandwatch-embed-demo
 CLIENT_ID=$(az ad app create --display-name gh-dive-embed-demo-deploy --query appId -o tsv)
 az ad sp create --id $CLIENT_ID --output none
 az role assignment create --assignee $CLIENT_ID --role "Website Contributor" \
@@ -89,7 +88,7 @@ az role assignment create --assignee $CLIENT_ID --role "Website Contributor" \
 az ad app federated-credential create --id $CLIENT_ID --parameters "{
   \"name\": \"github-production\",
   \"issuer\": \"https://token.actions.githubusercontent.com\",
-  \"subject\": \"repo:$REPO:environment:production\",
+  \"subject\": \"repo:leeh-ff@109681427/motherduck-dive-brandwatch-embed-demo@1456773907:environment:production\",
   \"audiences\": [\"api://AzureADTokenExchange\"]
 }"
 echo "AZURE_CLIENT_ID=$CLIENT_ID"
@@ -98,6 +97,8 @@ echo "AZURE_SUBSCRIPTION_ID=$(az account show --query id -o tsv)"
 echo "AZURE_RESOURCE_GROUP=$RG"
 echo "AZURE_WEBAPP_NAME=$APP"
 ```
+
+The subject uses GitHub's ID-based format (`owner@ownerId/repo@repoId`), which is what GitHub presents for this repo; the name-only form (`repo:owner/repo:...`) is rejected with AADSTS700213.
 
 Add the five printed values as **repository variables** (Settings → Secrets and variables → Actions → Variables; none are secret). The deploy job is skipped until they're set; then re-run it from the Actions tab or push to `main`.
 
