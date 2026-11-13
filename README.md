@@ -56,12 +56,11 @@ make check    # confirm the token file is svc_embed_caller's (needs the duckdb C
 One-off setup, with the Azure CLI (`az login` first). Pick a globally unique app name.
 
 ```bash
-RG=rg-dive-embed-demo
-LOC=uksouth
+RG=DiveEmbedTesting            # existing resource group
+LOC=$(az group show -n $RG --query location -o tsv)
 PLAN=asp-dive-embed-demo
 APP=ff-dive-embed-demo        # becomes https://$APP.azurewebsites.net
 
-az group create -n $RG -l $LOC
 az appservice plan create -g $RG -n $PLAN --is-linux --sku F1
 az webapp create -g $RG -p $PLAN -n $APP --runtime "PYTHON:3.12"
 az webapp update -g $RG -n $APP --https-only true
