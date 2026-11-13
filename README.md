@@ -19,7 +19,19 @@ Hosted as an Azure Web App (Linux, Free F1 plan) behind company sign-in (Entra I
 | `motherduck_session.py` | Token checks and the MotherDuck API call |
 | `index.html` | The page |
 | `check_token.py` | Local check that a token file really is `svc_embed_caller`'s |
-| `bitbucket-pipelines.yml` | Deploys `main` to Azure |
+| `.github/workflows/deploy.yml` | Deploys `main` to Azure |
+
+## Where the code lives
+
+- **GitHub (`leeh-ff/motherduck-dive-brandwatch-embed-demo`)** is the deployable copy: pushes to `main` deploy to Azure.
+- **Bitbucket (`ffonline-visualisations/motherduck-dive-brandwatch-embed-demo`)** holds the original prototype. Changes there are pulled into GitHub occasionally, one way only:
+
+  ```bash
+  git remote add bitbucket https://bitbucket.org/ffonline-visualisations/motherduck-dive-brandwatch-embed-demo.git  # once
+  git fetch bitbucket
+  git log --oneline main..bitbucket/main     # what's new
+  git merge bitbucket/main                    # then push main to deploy
+  ```
 
 ## Run it locally
 
@@ -65,12 +77,30 @@ Then turn on sign-in in the portal: **Web app → Authentication → Add identit
 - Supported account types: **Current tenant – Single tenant**
 - Restrict access: **Require authentication**; unauthenticated requests: **HTTP 302 redirect**
 
-Deploys: push to `main` and Bitbucket Pipelines deploys it (see the variables listed in `bitbucket-pipelines.yml`). A deploy service principal scoped to just this app:
+### Deploys from GitHub
+
+Push to `main` and GitHub Actions deploys it. It signs in to Azure with a federated credential (no stored secret), via an app registration that can only deploy to this one web app:
 
 ```bash
-az ad sp create-for-rbac --name sp-dive-embed-demo-deploy --role "Website Contributor" \
-  --scopes "$(az webapp show -g $RG -n $APP --query id -o tsv)"
+REPO=leeh-ff/motherduck-dive-brandwatch-embed-demo
+CLIENT_ID=$(az ad app create --display-name gh-dive-embed-demo-deploy --query appId -o tsv)
+az ad sp create --id $CLIENT_ID --output none
+az role assignment create --assignee $CLIENT_ID --role "Website Contributor" \
+  --scope "$(az webapp show -g $RG -n $APP --query id -o tsv)" --output none
+az ad app federated-credential create --id $CLIENT_ID --parameters "{
+  \"name\": \"github-production\",
+  \"issuer\": \"https://token.actions.githubusercontent.com\",
+  \"subject\": \"repo:$REPO:environment:production\",
+  \"audiences\": [\"api://AzureADTokenExchange\"]
+}"
+echo "AZURE_CLIENT_ID=$CLIENT_ID"
+echo "AZURE_TENANT_ID=$(az account show --query tenantId -o tsv)"
+echo "AZURE_SUBSCRIPTION_ID=$(az account show --query id -o tsv)"
+echo "AZURE_RESOURCE_GROUP=$RG"
+echo "AZURE_WEBAPP_NAME=$APP"
 ```
+
+Add the five printed values as **repository variables** (Settings → Secrets and variables → Actions → Variables; none are secret). The deploy job is skipped until they're set; then re-run it from the Actions tab or push to `main`.
 
 To deploy by hand instead:
 
